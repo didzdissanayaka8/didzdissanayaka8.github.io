@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Didula Dissanayaka — Robotics &amp; Autonomous Systems</title>
+<meta name="description" content="Didula Dissanayaka — Research Engineer working on Explainable AI, SLAM, and autonomous navigation for UAVs, AUVs, and field robots.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A1E33;
+    --ink-2:#0F2A47;
+    --panel:#102D4C;
+    --line: rgba(180, 210, 230, 0.16);
+    --line-strong: rgba(180, 210, 230, 0.30);
+    --paper:#EAF2F8;
+    --muted:#8FA9BE;
+    --cyan:#5FE0E8;
+    --amber:#FFB020;
+    --display: 'Space Grotesk', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --body: 'Inter', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--body);
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  ::selection{ background:var(--cyan); color:var(--ink); }
+  a{ color:inherit; }
+
+  .grid-bg{
+    position:fixed; inset:0; z-index:-2;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 48px 48px;
+    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 20%, black 40%, transparent 90%);
+            mask-image: radial-gradient(ellipse 90% 70% at 50% 20%, black 40%, transparent 90%);
+  }
+
+  .sheet{ max-width:1180px; margin:0 auto; padding:0 32px; position:relative; }
+
+  .crop{ position:fixed; width:18px; height:18px; border-color:var(--line-strong); z-index:5; pointer-events:none;}
+  .crop.tl{ top:20px; left:20px; border-top:1px solid; border-left:1px solid; }
+  .crop.tr{ top:20px; right:20px; border-top:1px solid; border-right:1px solid; }
+  .crop.bl{ bottom:20px; left:20px; border-bottom:1px solid; border-left:1px solid; }
+  .crop.br{ bottom:20px; right:20px; border-bottom:1px solid; border-right:1px solid; }
+
+  header{
+    position:sticky; top:0; z-index:20;
+    backdrop-filter: blur(10px);
+    background: rgba(10,30,51,0.75);
+    border-bottom:1px solid var(--line);
+  }
+  nav.sheet{ display:flex; align-items:center; justify-content:space-between; height:72px; }
+  .brand{ font-family:var(--mono); font-size:14px; letter-spacing:0.03em; color:var(--paper); display:flex; align-items:center; gap:10px; }
+  .brand .dot{ width:8px; height:8px; border-radius:50%; background:var(--cyan); box-shadow:0 0 10px var(--cyan); }
+  .navlinks{ display:flex; gap:28px; font-family:var(--mono); font-size:13px; letter-spacing:0.03em; color:var(--muted); }
+  .navlinks a{ text-decoration:none; }
+  .navlinks a:hover{ color:var(--cyan); }
+  a:focus-visible, button:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; }
+
+  /* hero */
+  .hero{ padding:120px 0 100px; position:relative; }
+  .eyebrow{ font-family:var(--mono); font-size:13px; color:var(--cyan); letter-spacing:0.08em; display:flex; align-items:center; gap:10px; margin-bottom:28px; }
+  .eyebrow::before{ content:""; width:28px; height:1px; background:var(--cyan); }
+  h1.title{ font-family:var(--display); font-weight:700; font-size:clamp(40px, 6vw, 76px); line-height:1.04; letter-spacing:-0.01em; max-width:900px; }
+  h1.title .accent{ color:var(--cyan); }
+  .lede{ font-size:18px; color:var(--muted); max-width:600px; margin-top:26px; }
+  .hero-meta{ display:flex; flex-wrap:wrap; gap:40px; margin-top:56px; font-family:var(--mono); font-size:13px; }
+  .hero-meta .label{ color:var(--muted); font-size:11px; letter-spacing:0.06em; margin-bottom:6px; display:block; }
+  .hero-meta .value{ color:var(--paper); font-size:14px; }
+  .hero-meta a.value:hover{ color:var(--cyan); }
+  .cta-row{ display:flex; gap:16px; margin-top:44px; flex-wrap:wrap; }
+  .btn{ font-family:var(--mono); font-size:13px; letter-spacing:0.02em; padding:13px 22px; border-radius:2px; text-decoration:none; display:inline-flex; align-items:center; gap:10px; transition:transform .15s ease, background .15s ease, color .15s ease; }
+  .btn.primary{ background:var(--cyan); color:var(--ink); font-weight:600;}
+  .btn.primary:hover{ transform:translateY(-2px); }
+  .btn.ghost{ border:1px solid var(--line-strong); color:var(--paper); }
+  .btn.ghost:hover{ border-color:var(--cyan); color:var(--cyan); transform:translateY(-2px); }
+
+  /* Signature hero visual: UAV performing a lidar sweep over a point cloud */
+  .scan-wrap{ position:absolute; right:-20px; top:40px; width:48%; height:460px; -webkit-mask-image: linear-gradient(to left, black 55%, transparent 100%); mask-image: linear-gradient(to left, black 55%, transparent 100%); opacity:0.95; }
+  @media (max-width: 900px){ .scan-wrap{ display:none; } }
+  .scan-wrap svg{ width:100%; height:100%; }
+  .scan-line{ animation: sweep 5s linear infinite; transform-origin: 380px 150px; }
+  @keyframes sweep{ 0%{ transform: rotate(-38deg); } 50%{ transform: rotate(38deg); } 100%{ transform: rotate(-38deg); } }
+  .prop{ animation: spin 0.6s linear infinite; transform-box: fill-box; transform-origin:center; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce){ .scan-line, .prop{ animation:none; } }
+
+  /* faint background schematic (humanoid) */
+  .watermark{ position:absolute; pointer-events:none; opacity:0.07; z-index:0; }
+  .watermark.humanoid{ right:0; top:40px; width:260px; }
+  @media (max-width:900px){ .watermark.humanoid{ display:none; } }
+
+  .section{ padding:96px 0; border-top:1px solid var(--line); position:relative; z-index:1; }
+  .section-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:56px; flex-wrap:wrap; }
+  .section-tag{ font-family:var(--mono); font-size:12px; color:var(--cyan); letter-spacing:0.1em; margin-bottom:14px; }
+  h2.section-title{ font-family:var(--display); font-size:clamp(28px,4vw,42px); font-weight:600; }
+  .section-note{ font-family:var(--mono); font-size:12px; color:var(--muted); max-width:280px; text-align:right; }
+  @media (max-width:700px){ .section-note{ text-align:left; } }
+
+  /* about */
+  .about-grid{ display:grid; grid-template-columns: 1.1fr 1fr; gap:64px; }
+  @media (max-width:800px){ .about-grid{ grid-template-columns:1fr; } }
+  .about-body p{ color:var(--muted); font-size:16px; margin-bottom:18px; max-width:54ch; }
+  .about-body strong{ color:var(--paper); font-weight:600; }
+  .focus-list{ display:flex; flex-direction:column; border-top:1px solid var(--line); }
+  .focus-list .row{ display:flex; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:13px; }
+  .focus-list .row span:first-child{ color:var(--paper); }
+  .focus-list .row span:last-child{ color:var(--muted); text-align:right; }
+  .edu-block{ margin-top:32px; }
+  .edu-item{ margin-bottom:16px; }
+  .edu-item .deg{ font-weight:600; color:var(--paper); font-size:14.5px; }
+  .edu-item .meta{ font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:4px; }
+
+  /* experience timeline */
+  .timeline{ position:relative; padding-left:28px; border-left:1px solid var(--line-strong); }
+  .tl-item{ position:relative; padding-bottom:44px; }
+  .tl-item:last-child{ padding-bottom:0; }
+  .tl-item::before{ content:""; position:absolute; left:-33px; top:4px; width:9px; height:9px; border-radius:50%; background:var(--ink); border:2px solid var(--cyan); }
+  .tl-role{ font-family:var(--display); font-size:18px; font-weight:600; }
+  .tl-org{ color:var(--cyan); font-family:var(--mono); font-size:12.5px; margin-top:4px; }
+  .tl-date{ color:var(--muted); font-family:var(--mono); font-size:11.5px; margin-top:4px; letter-spacing:0.03em; }
+  .tl-desc{ color:var(--muted); font-size:14.5px; margin-top:12px; max-width:70ch; }
+
+  /* project cards */
+  .projects{ display:flex; flex-direction:column; }
+  .proj{ display:grid; grid-template-columns: 320px 1fr; background:var(--panel); border:1px solid var(--line); position:relative; transition: border-color .2s ease; }
+  .proj + .proj{ margin-top:24px; }
+  .proj:hover{ border-color:var(--line-strong); }
+  .proj.featured{ border-color:var(--cyan); box-shadow:0 0 0 1px rgba(95,224,232,0.15); }
+  .proj-media{ position:relative; overflow:hidden; border-right:1px solid var(--line); background:#0B233D; display:flex; align-items:center; justify-content:center; }
+  .proj-media img{ width:100%; height:100%; object-fit:cover; display:block; min-height:220px; filter:saturate(0.9) contrast(1.02); transition:transform .5s ease, filter .5s ease; }
+  .proj:hover .proj-media img{ transform:scale(1.04); filter:saturate(1.05) contrast(1.05); }
+  .dwg-tag{ position:absolute; top:12px; left:12px; font-family:var(--mono); font-size:11px; background:rgba(10,30,51,0.85); color:var(--cyan); padding:4px 8px; border:1px solid var(--line-strong); letter-spacing:0.04em; z-index:2; }
+  .status-tag{ position:absolute; top:12px; right:12px; font-family:var(--mono); font-size:10.5px; background:rgba(255,176,32,0.15); color:var(--amber); padding:4px 8px; border:1px solid rgba(255,176,32,0.4); letter-spacing:0.04em; z-index:2; }
+  .proj-body{ padding:32px 36px; display:flex; flex-direction:column; }
+  @media (max-width:760px){ .proj{ grid-template-columns:1fr; } .proj-media img, .placeholder-media{ min-height:200px; } .proj-body{ padding:26px 24px; } }
+  .proj-title{ font-family:var(--display); font-size:21px; font-weight:600; margin-bottom:12px; line-height:1.3; }
+  .proj-desc{ color:var(--muted); font-size:15px; margin-bottom:20px; }
+  .proj-stack{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+  .chip{ font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--line-strong); padding:4px 10px; border-radius:2px; }
+  .proj-links{ margin-top:auto; display:flex; gap:20px; flex-wrap:wrap; }
+  .proj-links a{ font-family:var(--mono); font-size:12px; color:var(--cyan); text-decoration:none; display:flex; align-items:center; gap:6px; }
+  .proj-links a:hover{ text-decoration:underline; }
+
+  .placeholder-media{ width:100%; height:100%; min-height:220px; display:flex; align-items:center; justify-content:center; position:relative; }
+  .placeholder-media svg{ width:64px; height:64px; opacity:0.5; }
+  .placeholder-media .ph-label{ position:absolute; bottom:14px; font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:0.05em; }
+  .placeholder-media{ background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0 10px, transparent 10px 20px); border:1px dashed var(--line-strong); }
+
+  /* media slider (per-project gallery) */
+  .media-slider{ position:relative; width:100%; height:100%; min-height:260px; overflow:hidden; background:#0B233D; }
+  .ms-slide{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; }
+  .ms-slide.is-active{ display:flex; }
+  .ms-slide img, .ms-slide video{ max-width:100%; max-height:100%; width:100%; height:100%; object-fit:contain; }
+  .ms-nav{ position:absolute; top:50%; transform:translateY(-50%); background:rgba(10,30,51,0.75); color:var(--paper); border:1px solid var(--line-strong); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:16px; line-height:1; display:flex; align-items:center; justify-content:center; z-index:4; transition:border-color .15s ease, color .15s ease; }
+  .ms-nav:hover{ border-color:var(--cyan); color:var(--cyan); }
+  .ms-nav.prev{ left:10px; } .ms-nav.next{ right:10px; }
+  .ms-counter{ position:absolute; bottom:10px; right:12px; font-family:var(--mono); font-size:11px; background:rgba(10,30,51,0.8); padding:3px 9px; border:1px solid var(--line-strong); color:var(--paper); z-index:4; letter-spacing:0.03em; }
+  .ms-caption{ position:absolute; bottom:10px; left:12px; right:70px; font-family:var(--mono); font-size:10.5px; color:var(--muted); background:rgba(10,30,51,0.8); padding:4px 9px; border:1px solid var(--line); z-index:4; }
+  @media (max-width:760px){ .ms-caption{ display:none; } }
+
+  /* publications */
+  .pubs{ display:flex; flex-direction:column; gap:0; border-top:1px solid var(--line); }
+  .pub{ display:grid; grid-template-columns: 90px 1fr; gap:24px; padding:24px 0; border-bottom:1px solid var(--line); }
+  .pub .pyear{ font-family:var(--mono); font-size:13px; color:var(--cyan); }
+  .pub .ptitle{ font-family:var(--display); font-size:16.5px; font-weight:600; margin-bottom:6px; }
+  .pub .pmeta{ color:var(--muted); font-size:13.5px; }
+  .pub .pvenue{ font-family:var(--mono); font-size:11.5px; color:var(--muted); margin-top:8px; letter-spacing:0.02em; }
+  @media (max-width:600px){ .pub{ grid-template-columns:1fr; gap:6px; } }
+
+  /* honours + skills panels */
+  .panel-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); }
+  @media (max-width:800px){ .panel-grid{ grid-template-columns:1fr; } }
+  .panel{ background:var(--ink); padding:36px; }
+  .panel h3{ font-family:var(--mono); font-size:12px; color:var(--cyan); letter-spacing:0.08em; margin-bottom:22px; }
+  .award{ margin-bottom:18px; }
+  .award .a-title{ font-weight:600; font-size:14.5px; }
+  .award .a-meta{ font-family:var(--mono); font-size:11.5px; color:var(--muted); margin-top:4px; }
+  .skill-row{ display:flex; justify-content:space-between; gap:16px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
+  .skill-row:last-child{ border-bottom:none; }
+  .skill-row .s-label{ font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:0.04em; white-space:nowrap; }
+  .skill-row .s-value{ color:var(--paper); text-align:right; }
+
+  /* other projects */
+  .other-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
+  @media (max-width:700px){ .other-grid{ grid-template-columns:1fr; } }
+  .other-item{ background:var(--ink); padding:26px 28px; }
+  .other-item .idx{ font-family:var(--mono); font-size:11px; color:var(--cyan); display:block; margin-bottom:10px; }
+  .other-item p{ font-size:14.5px; color:var(--paper); max-width:44ch; }
+
+  footer{ border-top:1px solid var(--line); padding:80px 0 48px; }
+  .contact-grid{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:40px; }
+  .contact-title{ font-family:var(--display); font-size:clamp(26px,4vw,40px); font-weight:600; max-width:520px; }
+  .contact-links{ display:flex; flex-direction:column; gap:14px; }
+  .contact-links a{ font-family:var(--mono); font-size:14px; text-decoration:none; color:var(--paper); display:flex; align-items:center; gap:10px; }
+  .contact-links a:hover{ color:var(--cyan); }
+  .contact-links a::before{ content:"→"; color:var(--cyan); }
+  .fine{ margin-top:72px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--muted); flex-wrap:wrap; gap:10px; }
+
+  .reveal{ opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in{ opacity:1; transform:none; }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+<header>
+  <nav class="sheet">
+    <div class="brand"><span class="dot"></span> DIDULA DISSANAYAKA</div>
+    <div class="navlinks">
+      <a href="#about">Bio</a>
+      <a href="#experience">Experience</a>
+      <a href="#projects">Projects</a>
+      <a href="#publications">Publications</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+</header>
+
+<section class="hero sheet">
+  <div class="scan-wrap" aria-hidden="true">
+    <svg viewBox="0 0 460 420">
+      <!-- ground point cloud -->
+      <g fill="#8FA9BE" opacity="0.6">
+        <circle cx="300" cy="220" r="2"/><circle cx="330" cy="250" r="2"/><circle cx="260" cy="260" r="2"/>
+        <circle cx="230" cy="300" r="2"/><circle cx="200" cy="340" r="2"/><circle cx="280" cy="360" r="2"/>
+        <circle cx="350" cy="330" r="2"/><circle cx="150" cy="280" r="2"/><circle cx="120" cy="330" r="2"/>
+        <circle cx="380" cy="290" r="2"/><circle cx="90" cy="240" r="2"/><circle cx="60" cy="300" r="2"/>
+      </g>
+      <!-- range rings from the UAV -->
+      <circle cx="330" cy="130" r="50" fill="none" stroke="rgba(95,224,232,0.16)"/>
+      <circle cx="330" cy="130" r="100" fill="none" stroke="rgba(95,224,232,0.12)"/>
+      <circle cx="330" cy="130" r="160" fill="none" stroke="rgba(95,224,232,0.08)"/>
+      <!-- lidar sweep cone, originating at the UAV -->
+      <g class="scan-line" style="transform-origin:330px 130px;">
+        <path d="M 330 130 L 220 340 L 440 340 Z" fill="rgba(95,224,232,0.09)"/>
+        <line x1="330" y1="130" x2="220" y2="340" stroke="#5FE0E8" stroke-width="1"/>
+        <line x1="330" y1="130" x2="440" y2="340" stroke="#5FE0E8" stroke-width="1"/>
+      </g>
+      <!-- quadcopter UAV, schematic top-down -->
+      <g stroke="#5FE0E8" stroke-width="1.6" fill="none">
+        <line x1="330" y1="130" x2="290" y2="90"/>
+        <line x1="330" y1="130" x2="370" y2="90"/>
+        <line x1="330" y1="130" x2="290" y2="170"/>
+        <line x1="330" y1="130" x2="370" y2="170"/>
+        <rect x="316" y="116" width="28" height="28" rx="4"/>
+        <circle class="prop" cx="290" cy="90" r="14"/>
+        <circle class="prop" cx="370" cy="90" r="14"/>
+        <circle class="prop" cx="290" cy="170" r="14"/>
+        <circle class="prop" cx="370" cy="170" r="14"/>
+      </g>
+      <text x="330" y="60" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#8FA9BE" letter-spacing="1">UAV — LIDAR / VISUAL-INERTIAL SCAN</text>
+    </svg>
+  </div>
+
+  <div class="eyebrow">RESEARCH ENGINEER — ROBOTICS &amp; AUTONOMOUS SYSTEMS</div>
+  <h1 class="title">Perception, navigation<br>&amp; explainability for<br><span class="accent">autonomous machines.</span></h1>
+  <p class="lede">I build SLAM, sensor-fusion, and explainable deep reinforcement learning systems for UAVs, underwater vehicles, and field robots — from simulation to hardware-in-the-loop testing.</p>
+
+  <div class="cta-row">
+    <a class="btn primary" href="#projects">View projects</a>
+    <a class="btn ghost" href="#contact">Get in touch</a>
+  </div>
+
+  <div class="hero-meta">
+    <div class="item"><span class="label">BASED IN</span><span class="value">St. John's, NL, Canada</span></div>
+    <div class="item"><span class="label">CURRENT ROLE</span><span class="value">Research Assistant II, Memorial University of Newfoundland</span></div>
+    <div class="item"><span class="label">GITHUB</span><a class="value" href="https://github.com/didzdissanayaka8" target="_blank" rel="noopener">github.com/didzdissanayaka8</a></div>
+    <div class="item"><span class="label">LINKEDIN</span><a class="value" href="https://www.linkedin.com/in/didula-dissanayaka-52879147/" target="_blank" rel="noopener">in/didula-dissanayaka</a></div>
+  </div>
+</section>
+
+<section class="section sheet reveal" id="about">
+  <svg class="watermark humanoid" viewBox="0 0 200 420" aria-hidden="true">
+    <g stroke="#5FE0E8" stroke-width="1.4" fill="none">
+      <circle cx="100" cy="46" r="26"/>
+      <line x1="100" y1="72" x2="100" y2="220"/>
+      <line x1="60" y1="100" x2="140" y2="100"/>
+      <line x1="60" y1="100" x2="40" y2="190"/>
+      <line x1="140" y1="100" x2="160" y2="190"/>
+      <line x1="100" y1="220" x2="70" y2="360"/>
+      <line x1="100" y1="220" x2="130" y2="360"/>
+      <circle cx="60" cy="100" r="4"/><circle cx="140" cy="100" r="4"/>
+      <circle cx="40" cy="190" r="4"/><circle cx="160" cy="190" r="4"/>
+      <circle cx="100" cy="220" r="4"/><circle cx="70" cy="360" r="4"/><circle cx="130" cy="360" r="4"/>
+      <line x1="180" y1="20" x2="180" y2="360"/>
+      <line x1="174" y1="20" x2="186" y2="20"/>
+      <line x1="174" y1="360" x2="186" y2="360"/>
+    </g>
+    <text x="180" y="200" font-family="IBM Plex Mono, monospace" font-size="9" fill="#8FA9BE" transform="rotate(90 180 200)" letter-spacing="1" text-anchor="middle">HUMANOID — ARTICULATED, BIPEDAL BASE</text>
+  </svg>
+
+  <div class="section-head">
+    <div>
+      <div class="section-tag">01 · BIO</div>
+      <h2 class="section-title">About</h2>
+    </div>
+    <div class="section-note">M.Eng in Computer Engineering, Memorial University of Newfoundland.</div>
+  </div>
+  <div class="about-grid">
+    <div class="about-body">
+      <p>I'm a <strong>Research Engineer</strong> at Memorial University of Newfoundland working on explainable AI, deep reinforcement learning, and SLAM for autonomous UAV navigation. My work sits at the intersection of <strong>perception</strong> (lidar, camera, IMU, GPS sensor fusion), <strong>learning-based control</strong>, and making those systems interpretable enough to trust in the field.</p>
+      <p>I like problems that don't stay in simulation — testing localization on a Bell 412 helicopter, applying Integrated Gradients to explain a drone's obstacle-avoidance decisions in real time, or getting a battery management system into a real electric supercar.</p>
+      <div class="edu-block">
+        <div class="edu-item">
+          <div class="deg">Master of Engineering, Computer Engineering — GPA 4.0/4.0</div>
+          <div class="meta">Memorial University of Newfoundland, Canada · Jan 2020 – May 2022</div>
+        </div>
+        <div class="edu-item">
+          <div class="deg">B.Sc.Eng (Hons), Electronic &amp; Telecommunication Engineering</div>
+          <div class="meta">University of Moratuwa, Sri Lanka · Mar 2013 – Apr 2017</div>
+        </div>
+      </div>
+    </div>
+    <div class="focus-list">
+      <div class="row"><span>Explainable AI</span><span>Integrated Gradients, DRL</span></div>
+      <div class="row"><span>Autonomous navigation &amp; mapping</span><span>SLAM, VI-LOAM</span></div>
+      <div class="row"><span>Sensor fusion</span><span>Lidar · Camera · IMU · GPS</span></div>
+      <div class="row"><span>Simulation</span><span>Unreal Engine, AirSim, Gazebo</span></div>
+      <div class="row"><span>Embedded &amp; controls</span><span>ROS · ESP32 · BMS</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section sheet reveal" id="experience">
+  <div class="section-head">
+    <div>
+      <div class="section-tag">02 · TIMELINE</div>
+      <h2 class="section-title">Experience</h2>
+    </div>
+    <div class="section-note">Six roles across research, industry, and teaching since 2015.</div>
+  </div>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-role">Research Assistant II</div>
+      <div class="tl-org">Memorial University of Newfoundland, Canada</div>
+      <div class="tl-date">SEP 2023 — PRESENT</div>
+      <div class="tl-desc">Pioneered one of the first explainable AI (XAI) approaches for autonomous UAV navigation, applying Integrated Gradients to interpret DRL-based navigation and obstacle-avoidance models in real time. Designed and validated DRL-based 3D navigation and obstacle-avoidance models through extensive simulation testing in complex environments (Unreal Engine, AirSim). Published at IEEE/RSJ IROS 2024; follow-on manuscript submitted to IEEE Transactions on Intelligent Transportation Systems.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-role">Software Engineer</div>
+      <div class="tl-org">Xplorobot, Canada</div>
+      <div class="tl-date">JUN 2022 — APR 2023</div>
+      <div class="tl-desc">Improved the 3D model texturing pipeline using visual, thermal, and methane-concentration imagery. Developed a methane flowrate calculator, an interactive 3D bounding box for the GUI, and automatic leak-region detection from methane textures. Built and debugged test cases using GDB and Valgrind.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-role">Research Assistant</div>
+      <div class="tl-org">Intelligent Systems Laboratory, with NRC Flight Research Laboratory, Canada</div>
+      <div class="tl-date">JAN 2020 — MAY 2022</div>
+      <div class="tl-desc">Developed a novel SLAM algorithm fusing camera, lidar, IMU, and GPS for real-time UAV and aircraft navigation, reaching over 99.5% estimation accuracy — roughly 2x prior state-of-the-art methods. Implemented a real-time landing-zone identification algorithm for autonomous UAVs in MATLAB, later ported to Python.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-role">Research Assistant</div>
+      <div class="tl-org">University of Moratuwa, Sri Lanka</div>
+      <div class="tl-date">OCT 2018 — OCT 2019</div>
+      <div class="tl-desc">Developed an algorithm for a continuous track-wheeled robot to self-balance and navigate uneven terrain using arm maneuvers, for disaster management and field robotics applications.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-role">Lecturer</div>
+      <div class="tl-org">University of Moratuwa, Sri Lanka</div>
+      <div class="tl-date">MAY 2017 — OCT 2018</div>
+      <div class="tl-desc">Lectured Basic Electronics (40+ hours, 300+ students); taught Machine Vision &amp; Image Processing, Autonomous Systems, and Robotics.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-role">Associate Electronic Engineer</div>
+      <div class="tl-org">VEGA Technologies (Pvt) Ltd, Sri Lanka — VEGA electric supercar</div>
+      <div class="tl-date">OCT 2015 — APR 2016</div>
+      <div class="tl-desc">Improved the Battery Management System for a 60kWh, 495V battery pack and designed a 400A Hall-effect current sensor and temperature sensor circuit for the motor controller, interfaced via the vehicle's CAN bus.</div>
+    </div>
+  </div>
+</section>
+
+<section class="section sheet reveal" id="projects">
+  <div class="section-head">
+    <div>
+      <div class="section-tag">03 · SELECTED WORK</div>
+      <h2 class="section-title">Projects</h2>
+    </div>
+    <div class="section-note">Eight research &amp; engineering projects spanning aerial, underwater, and ground robotics.</div>
+  </div>
+
+  <div class="projects">
+
+    <article class="proj featured">
+      <div class="proj-media">
+        <span class="dwg-tag">DWG-01</span>
+        <div class="media-slider" data-slider>
+          <div class="ms-slide is-active" data-caption="Test platform: DJI Tello quadrotor used for real-time flight validation.">
+            <img src="media/xai-tello.jpg" alt="DJI Tello quadrotor test platform used for flight validation" loading="lazy">
+          </div>
+          <div class="ms-slide" style="background:#fff;" data-caption="Integrated Gradients attribution map for an altitude-climb decision, triggered by a detected tripod.">
+            <img src="media/xai-altitude.png" alt="Explainability heatmap showing altitude change attributed to a detected tripod" loading="lazy">
+          </div>
+          <div class="ms-slide" style="background:#fff;" data-caption="Attribution map for a velocity-decrease decision, triggered by a detected chair.">
+            <img src="media/xai-velocity.png" alt="Explainability heatmap showing velocity change attributed to a detected chair" loading="lazy">
+          </div>
+          <div class="ms-slide" data-caption="Real-time flight test: live object detection with explainability overlay.">
+            <video src="media/xai-demo.mp4" controls playsinline preload="metadata"></video>
+          </div>
+          <button class="ms-nav prev" type="button" aria-label="Previous media">‹</button>
+          <button class="ms-nav next" type="button" aria-label="Next media">›</button>
+          <div class="ms-counter">1/4</div>
+          <div class="ms-caption"></div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <h3 class="proj-title">Explainable AI for Autonomous UAV Navigation</h3>
+        <p class="proj-desc">Pioneered one of the first explainable AI (XAI) approaches for autonomous UAV navigation, applying Integrated Gradients to interpret deep reinforcement learning (DRL) based navigation and obstacle-avoidance models in real time. Designed and validated the underlying 3D navigation models through extensive simulation testing in complex environments. Published at IEEE/RSJ IROS 2024, with a follow-on manuscript submitted to IEEE Transactions on Intelligent Transportation Systems.</p>
+        <div class="proj-stack"><span class="chip">Python</span><span class="chip">TensorFlow</span><span class="chip">Deep RL</span><span class="chip">Integrated Gradients</span><span class="chip">Unreal Engine</span><span class="chip">AirSim</span></div>
+        <div class="proj-links">
+          <a href="#publications">IEEE/RSJ IROS 2024 paper</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="proj">
+      <div class="proj-media"><span class="dwg-tag">DWG-02</span>
+        <div class="media-slider" data-slider>
+          <div class="ms-slide is-active" data-caption="RViz visualization: real-time feature tracking (left) and the fused lidar point cloud with estimated path (right).">
+            <img src="media/viloam-rviz.png" alt="RViz visualization of visual-inertial lidar odometry, feature tracking and point cloud" loading="lazy">
+          </div>
+          <div class="ms-slide" style="background:#fff;" data-caption="Sensor payload: lidar, camera, IMU, GPS, and onboard compute, mounted for flight testing.">
+            <img src="media/viloam-payload.png" alt="VI-LOAM sensor payload with lidar, camera, IMU, GPS, and Intel NUC labeled" loading="lazy">
+          </div>
+          <div class="ms-slide" data-caption="Bell 412 helicopter used as a full-scale flight test platform.">
+            <img src="media/viloam-heli.jpg" alt="Bell 412 helicopter test platform in a hangar" loading="lazy">
+          </div>
+          <div class="ms-slide" data-caption="Estimated trajectory and mapped point cloud along a road course, with onboard camera view inset.">
+            <img src="media/viloam-path.png" alt="Estimated path and point cloud map along a road, with camera view inset" loading="lazy">
+          </div>
+          <div class="ms-slide" data-caption="Flight test recording: real-time odometry and mapping output.">
+            <video src="media/viloam-demo.mp4" controls playsinline preload="metadata"></video>
+          </div>
+          <button class="ms-nav prev" type="button" aria-label="Previous media">‹</button>
+          <button class="ms-nav next" type="button" aria-label="Next media">›</button>
+          <div class="ms-counter">1/5</div>
+          <div class="ms-caption"></div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <h3 class="proj-title">Visual-Inertial, Lidar Odometry and Mapping (VI-LOAM) for UAV Parcel Delivery</h3>
+        <p class="proj-desc">A novel SLAM algorithm fusing camera, lidar, IMU, and GPS for real-time UAV and aircraft navigation — over 99.5% estimation accuracy, roughly 2x more accurate than prior state-of-the-art methods. Field-tested on a Bell 412 helicopter and an M600 drone.</p>
+        <div class="proj-stack"><span class="chip">C++</span><span class="chip">ROS</span><span class="chip">OpenCV</span><span class="chip">PCL</span><span class="chip">Ceres</span></div>
+        <div class="proj-links">
+          <a href="https://github.com/didzdissanayaka8/VI-LOAM_ISLAB.git" target="_blank" rel="noopener">GitHub repo</a>
+          <a href="https://drive.google.com/file/d/1A59ekTNWDqfdA-oYdOo5vE8VPnwWogY9/view?usp=sharing" target="_blank" rel="noopener">Data capture video</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="proj">
+      <div class="proj-media"><span class="dwg-tag">DWG-03</span>
+        <div class="media-slider" data-slider>
+          <div class="ms-slide is-active" data-caption="3D textured methane map of an industrial plant, generated by the Xplorobot desktop software.">
+            <video src="media/methane-demo.mp4" controls playsinline preload="metadata"></video>
+          </div>
+          <div class="ms-slide" data-caption="Automatic leak-region detection: a bounding box flags the leak source with an estimated methane concentration and flow rate.">
+            <img src="media/methane-leak.jpg" alt="3D methane texture overlay on industrial equipment with a detected leak region, concentration and flow rate readout" loading="lazy">
+          </div>
+          <button class="ms-nav prev" type="button" aria-label="Previous media">‹</button>
+          <button class="ms-nav next" type="button" aria-label="Next media">›</button>
+          <div class="ms-counter">1/2</div>
+          <div class="ms-caption"></div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <h3 class="proj-title">Enhanced 3D Modeling &amp; Methane Emission Monitoring for Industrial Plants</h3>
+        <p class="proj-desc">Improved the 3D model texturing pipeline using visual, thermal, and methane-concentration imagery on the Xplorobot desktop software. Built three new algorithms: a methane flowrate calculator, an interactive 3D bounding box for the GUI, and automatic leak-region detection from methane textures.</p>
+        <div class="proj-stack"><span class="chip">C++</span><span class="chip">OpenCV</span><span class="chip">PCL</span><span class="chip">VTK</span><span class="chip">Qt</span></div>
+      </div>
+    </article>
+
+    <article class="proj">
+      <div class="proj-media"><span class="dwg-tag">DWG-04</span>
+        <img src="media/tick-device.png" alt="Tick Stick 3D-printed detection device with onboard display, camera module, and a tick sample on skin" loading="lazy">
+      </div>
+      <div class="proj-body">
+        <h3 class="proj-title">Tick Stick — AI-Powered Tick Detection Device</h3>
+        <p class="proj-desc">Led software development for a real-time image classification and tick detection system, reaching over 92% accuracy with a MobileNet neural network. Integrated with an ESP32-S3 Eye board to produce the first working prototype, in close collaboration with investors and a cross-functional team.</p>
+        <div class="proj-stack"><span class="chip">Python</span><span class="chip">TensorFlow</span><span class="chip">C++</span><span class="chip">ESP32-S3</span></div>
+      </div>
+    </article>
+
+    <article class="proj">
+      <div class="proj-media"><span class="dwg-tag">DWG-05</span>
+        <img src="media/track-gazebo.jpg" alt="Gazebo (ROS) simulation of the track robot on uneven terrain, alongside the tracked arm platform" loading="lazy">
+      </div>
+      <div class="proj-body">
+        <h3 class="proj-title">Self-Balancing Track Robot on Uneven Terrain via Arm Maneuvering</h3>
+        <p class="proj-desc">Developed an algorithm for a continuous-track wheeled robot to self-balance and navigate uneven terrain using arm maneuvers, applying Zero Moment Point (ZMP) principles and the support polygon of the track and ground. Aimed at disaster management and field robotics.</p>
+        <div class="proj-stack"><span class="chip">C++</span><span class="chip">ROS</span><span class="chip">Gazebo</span></div>
+      </div>
+    </article>
+
+    <article class="proj">
+      <div class="proj-media"><span class="dwg-tag">DWG-06</span>
+        <div class="media-slider" data-slider>
+          <div class="ms-slide is-active" style="background:#fff;" data-caption="End-to-end pipeline: rotating capture rig, cloud-based 3D reconstruction server, and mobile app retrieval via QR code.">
+            <img src="media/artifact-pipeline.jpg" alt="Diagram of the end-to-end artifact 3D reconstruction pipeline, from rotating capture rig to mobile app retrieval" loading="lazy">
+          </div>
+          <div class="ms-slide" style="background:#fff;" data-caption="Reconstruction process: feature detection and matching, structure from motion, point cloud densification, texture mapping, and final results across several artifacts.">
+            <img src="media/artifact-reconstruction.png" alt="Stages of the 3D reconstruction algorithm and resulting textured models of several artifacts" loading="lazy">
+          </div>
+          <button class="ms-nav prev" type="button" aria-label="Previous media">‹</button>
+          <button class="ms-nav next" type="button" aria-label="Next media">›</button>
+          <div class="ms-counter">1/2</div>
+          <div class="ms-caption"></div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <h3 class="proj-title">End-to-End 3D Reconstruction of Ancient Artifacts from Images</h3>
+        <p class="proj-desc">An autonomous end-to-end system to reconstruct artifacts in 3D from 2D images: a rotating mechanical platform captures photographs across a hemispherical area, an algorithm outputs a high-quality 3D reconstruction, and a mobile app retrieves and lets users interact with the resulting models.</p>
+        <div class="proj-stack"><span class="chip">C++</span><span class="chip">OpenCV</span><span class="chip">Java</span></div>
+      </div>
+    </article>
+
+    <article class="proj">
+      <div class="proj-media"><span class="dwg-tag">DWG-07</span>
+        <img src="media/auv-hardware.jpg" alt="Surface vehicle, autonomous underwater vehicle, and S2C acoustic modem used for the communication link" loading="lazy">
+      </div>
+      <div class="proj-body">
+        <h3 class="proj-title">Communication Link &amp; Underwater Localization for AUVs</h3>
+        <p class="proj-desc">Implemented and tested an underwater acoustic communication link between an AUV and a surface vehicle using sweep-spread-carrier (S2C) technology, and improved underwater localization relative to the surface vehicle.</p>
+        <div class="proj-stack"><span class="chip">C++</span><span class="chip">Underwater Acoustics</span></div>
+      </div>
+    </article>
+
+    <article class="proj">
+      <div class="proj-media"><span class="dwg-tag">DWG-08</span>
+        <div class="media-slider" data-slider>
+          <div class="ms-slide is-active" style="background:#fff;" data-caption="Battery pack placement in the VEGA EVX chassis, with the BMS circuit boards developed for cell monitoring.">
+            <img src="media/vega-battery.jpg" alt="VEGA EVX battery pack placement diagram and assembled BMS circuit boards" loading="lazy">
+          </div>
+          <div class="ms-slide" data-caption="VEGA EVX, the Sri Lankan electric supercar this BMS and battery pack were built for.">
+            <img src="media/vega-car1.jpg" alt="VEGA EVX electric supercar, front three-quarter view on a city street" loading="lazy">
+          </div>
+          <div class="ms-slide" data-caption="The VEGA engineering team with an early rolling chassis prototype.">
+            <img src="media/vega-team.jpg" alt="VEGA engineering team posing with an early rolling chassis prototype" loading="lazy">
+          </div>
+          <div class="ms-slide" data-caption="VEGA EVX at night, rear view.">
+            <img src="media/vega-car2.jpg" alt="VEGA EVX electric supercar rear view at night" loading="lazy">
+          </div>
+          <button class="ms-nav prev" type="button" aria-label="Previous media">‹</button>
+          <button class="ms-nav next" type="button" aria-label="Next media">›</button>
+          <div class="ms-counter">1/4</div>
+          <div class="ms-caption"></div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <h3 class="proj-title">Battery Management System &amp; Module Integration — VEGA Electric Supercar</h3>
+        <p class="proj-desc">Improved a supervisory-level BMS for a 60kWh, 495V battery pack and designed a 400A Hall-effect current sensor and temperature sensor circuit for the motor controller, interfaced via the vehicle's CAN bus.</p>
+        <div class="proj-stack"><span class="chip">BMS</span><span class="chip">Embedded Systems</span><span class="chip">Circuit Design</span></div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section class="section sheet reveal" id="publications">
+  <div class="section-head">
+    <div>
+      <div class="section-tag">04 · PUBLICATIONS</div>
+      <h2 class="section-title">Papers</h2>
+    </div>
+    <div class="section-note">Peer-reviewed and submitted work, most recent first.</div>
+  </div>
+  <div class="pubs">
+    <div class="pub">
+      <div class="pyear">2025</div>
+      <div>
+        <div class="ptitle">Real-Time Explainable AI for Autonomous UAV Navigation: Integrated Gradients and Experimental Validation</div>
+        <div class="pmeta">Didula Dissanayaka</div>
+        <div class="pvenue">SUBMITTED — IEEE TRANSACTIONS ON INTELLIGENT TRANSPORTATION SYSTEMS</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pyear">2024</div>
+      <div>
+        <div class="ptitle">Explainable Artificial Intelligence for Autonomous UAV Navigation</div>
+        <div class="pmeta">Didula Dissanayaka, Thumeera R. Wanasinghe, George Mann</div>
+        <div class="pvenue">IEEE/RSJ INTERNATIONAL CONFERENCE ON INTELLIGENT ROBOTS AND SYSTEMS (IROS)</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pyear">2022</div>
+      <div>
+        <div class="ptitle">Review of Navigation Methods for UAV-Based Parcel Delivery</div>
+        <div class="pmeta">Didula Dissanayaka, Thumeera R. Wanasinghe, Oscar De Silva, Awantha Jayasiri, George Mann</div>
+        <div class="pvenue">IEEE TRANSACTIONS ON AUTOMATION SCIENCE AND ENGINEERING</div>
+      </div>
+    </div>
+    <div class="pub">
+      <div class="pyear">2021</div>
+      <div>
+        <div class="ptitle">Numerical Study of GPS Aided Visual Lidar Odometry and Mapping (VLOAM) for Safety Regulatory Compliance</div>
+        <div class="pmeta">Didula Dissanayaka, Oscar De Silva, Thumeera R. Wanasinghe, Awantha Jayasiri, George Mann</div>
+        <div class="pvenue">IEEE NEWFOUNDLAND ELECTRICAL AND COMPUTER ENGINEERING CONFERENCE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section sheet reveal" id="honours">
+  <div class="section-head">
+    <div>
+      <div class="section-tag">05 · RECOGNITION &amp; TOOLS</div>
+      <h2 class="section-title">Honours &amp; Skills</h2>
+    </div>
+  </div>
+  <div class="panel-grid">
+    <div class="panel">
+      <h3>HONOURS &amp; AWARDS</h3>
+      <div class="award">
+        <div class="a-title">Faculty of Engineering and Applied Science Graduate Scholarship</div>
+        <div class="a-meta">Memorial University of Newfoundland · 2022</div>
+      </div>
+      <div class="award">
+        <div class="a-title">Manamperi Award — Best Research Engineering Project in Sri Lanka (1st of 60+ projects)</div>
+        <div class="a-meta">SLSA · 2017</div>
+      </div>
+      <div class="award">
+        <div class="a-title">CIMA Advanced Diploma in Management Accounting</div>
+        <div class="a-meta">Chartered Institute of Management Accountants · Sep 2011</div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>SKILLS</h3>
+      <div class="skill-row"><span class="s-label">LANGUAGES</span><span class="s-value">Python, C++, C, Java, SQL, Micro C, VHDL</span></div>
+      <div class="skill-row"><span class="s-label">AI / ML</span><span class="s-value">TensorFlow, PyTorch, Deep RL, XAI, Integrated Gradients, CUDA</span></div>
+      <div class="skill-row"><span class="s-label">ROBOTICS / CV</span><span class="s-value">ROS, OpenCV, PCL, Ceres, GTSAM, SLAM, Unreal Engine, AirSim, Gazebo, MATLAB</span></div>
+      <div class="skill-row"><span class="s-label">TOOLS</span><span class="s-value">Git, Linux, GDB, Valgrind, SolidWorks, AutoCAD</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section sheet reveal" id="other">
+  <div class="section-head">
+    <div>
+      <div class="section-tag">06 · ARCHIVE</div>
+      <h2 class="section-title">Other Projects</h2>
+    </div>
+    <div class="section-note">Smaller builds, kept for the record.</div>
+  </div>
+  <div class="other-grid">
+    <div class="other-item"><span class="idx">ARC-01</span><p>Autonomous grid-solving robot: locates the best path, then detects, fetches, and places objects (Micro C).</p></div>
+    <div class="other-item"><span class="idx">ARC-02</span><p>3D convolutional neural network for vegetation detection from images, built in TensorFlow.</p></div>
+  </div>
+</section>
+
+<footer id="contact" class="sheet reveal">
+  <div class="contact-grid">
+    <div class="contact-title">Working on a robotics, perception, or XAI problem? Let's talk.</div>
+    <div class="contact-links">
+      <a href="mailto:dissanayakadidula@gmail.com">dissanayakadidula@gmail.com</a>
+      <a href="https://github.com/didzdissanayaka8" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/didula-dissanayaka-52879147/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+  <div class="fine">
+    <span>© <span id="year"></span> Didula Dissanayaka</span>
+    <span>St. John's, Newfoundland &amp; Labrador, Canada</span>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  document.querySelectorAll('[data-slider]').forEach(function(slider){
+    var slides = Array.prototype.slice.call(slider.querySelectorAll('.ms-slide'));
+    var counter = slider.querySelector('.ms-counter');
+    var caption = slider.querySelector('.ms-caption');
+    var prev = slider.querySelector('.ms-nav.prev');
+    var next = slider.querySelector('.ms-nav.next');
+    var idx = 0;
+    function show(newIdx){
+      var current = slides[idx].querySelector('video');
+      if(current){ current.pause(); }
+      slides[idx].classList.remove('is-active');
+      idx = (newIdx + slides.length) % slides.length;
+      slides[idx].classList.add('is-active');
+      if(counter){ counter.textContent = (idx+1) + '/' + slides.length; }
+      if(caption){ caption.textContent = slides[idx].getAttribute('data-caption') || ''; }
+    }
+    if(prev){ prev.addEventListener('click', function(){ show(idx-1); }); }
+    if(next){ next.addEventListener('click', function(){ show(idx+1); }); }
+    show(0);
+  });
+</script>
+
+</body>
+</html>
