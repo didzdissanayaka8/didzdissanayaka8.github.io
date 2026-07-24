@@ -100,6 +100,10 @@
   .watermark.humanoid{ right:0; top:40px; width:260px; }
   @media (max-width:900px){ .watermark.humanoid{ display:none; } }
 
+  /* peeking robot sketch, sits below the section header so it never overlaps the note text */
+  .bot-peek-exp{ position:absolute; right:0; top:140px; width:220px; opacity:0.9; pointer-events:none; z-index:0; }
+  @media (max-width:1000px){ .bot-peek-exp{ display:none; } }
+
   .section{ padding:48px 0; border-top:1px solid var(--line); position:relative; z-index:1; }
   .section-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:56px; flex-wrap:wrap; }
   .section-tag{ font-family:var(--mono); font-size:12px; color:var(--cyan); letter-spacing:0.1em; margin-bottom:14px; }
@@ -348,6 +352,36 @@
     </div>
     <div class="section-note">Six roles across research, industry, and teaching since 2015.</div>
   </div>
+
+  <svg class="bot-peek-exp" viewBox="0 0 220 380" aria-hidden="true">
+    <g stroke="#5FE0E8" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <!-- the edge the robot is peeking around -->
+      <line x1="185" y1="0" x2="185" y2="380" stroke-width="1.2" opacity="0.6"/>
+
+      <!-- helmet / head, tilted, peeking left -->
+      <path d="M75 20 Q140 12 148 65 Q154 112 100 122 Q55 122 48 90 Q42 60 75 20 Z"/>
+      <rect x="70" y="48" width="58" height="42" rx="9"/>
+      <circle cx="90" cy="69" r="3.4" fill="#5FE0E8"/>
+      <circle cx="60" cy="60" r="10"/>
+      <circle cx="140" cy="30" r="9"/>
+
+      <!-- body -->
+      <path d="M100 122 Q150 128 155 175 Q158 220 120 235 Q90 240 82 205 Q78 165 100 122 Z"/>
+
+      <!-- upper arm reaching to the edge -->
+      <path d="M150 150 Q170 140 178 120"/>
+      <circle cx="178" cy="120" r="5"/>
+      <path d="M178 118 L200 100 M178 118 L204 118 M178 118 L196 134" stroke-width="1.5"/>
+      <circle cx="200" cy="100" r="4.5"/><circle cx="204" cy="118" r="4.5"/><circle cx="196" cy="134" r="4.5"/>
+
+      <!-- lower arm reaching to the edge -->
+      <path d="M120 218 Q155 232 172 262"/>
+      <circle cx="172" cy="262" r="5"/>
+      <path d="M172 264 L188 280 M172 264 L196 264 M172 264 L190 248" stroke-width="1.5"/>
+      <circle cx="188" cy="280" r="4.5"/><circle cx="196" cy="264" r="4.5"/><circle cx="190" cy="248" r="4.5"/>
+    </g>
+  </svg>
+
   <div class="timeline">
     <div class="tl-item">
       <div class="tl-role">Research Engineer II</div>
